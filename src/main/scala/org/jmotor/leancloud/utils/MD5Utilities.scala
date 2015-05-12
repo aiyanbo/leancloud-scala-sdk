@@ -10,7 +10,7 @@ import java.security.MessageDigest
  */
 object MD5Utilities {
 
-  def encode(plainText: String) = {
+  def encode(plainText: String): String = {
     try {
       val messageDigest: MessageDigest = MessageDigest.getInstance("MD5")
       messageDigest.update(plainText.getBytes("UTF-8"))
@@ -21,7 +21,7 @@ object MD5Utilities {
       }
       result.toString();
     } catch {
-      case e: Throwable => new RuntimeException("MD5 encode failure.")
+      case e: Throwable => throw new RuntimeException("MD5 encode failure.")
     }
   }
 }
