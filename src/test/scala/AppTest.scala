@@ -1,9 +1,7 @@
-import java.time.LocalDateTime
-import java.time.temporal.TemporalField
 import java.util.concurrent.Future
 
-import com.ning.http.client.{AsyncHttpClientConfig, Response, AsyncHttpClient}
-import com.typesafe.config.{ConfigFactory, Config}
+import com.ning.http.client.{AsyncHttpClient, Response}
+import com.typesafe.config.{Config, ConfigFactory}
 import org.jmotor.leancloud.utils.MD5Utilities
 import org.scalatest.FunSuite
 
