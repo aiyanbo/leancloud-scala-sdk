@@ -28,10 +28,10 @@ object LeanCloudClient {
 
   def get(className: String, objectId: String): Future[Response] = execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
-  private def execute(requestBuilder: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
+  private def execute(r: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
     val timestamp: Long = System.currentTimeMillis()
-    requestBuilder.addHeader("X-AVOSCloud-Application-Id", id)
-    requestBuilder.addHeader("X-AVOSCloud-Request-Sign", s"${MD5Utilities.encode(s"$timestamp$key")},$timestamp")
-    requestBuilder.execute()
-  }
+    r.addHeader("X-AVOSCloud-Application-Id", id)
+    r.addHeader("X-AVOSCloud-Request-Sign", s"${MD5Utilities.encode(s"$timestamp$key")},$timestamp")
+    r.addHeader(HttpHeaders.Names.USER_AGENT, "leancloud-scala-sdk-1.0.0-SNAPSHOT")
+  }.execute()
 }
