@@ -20,13 +20,14 @@ object LeanCloudClient {
   private val asyncHttpClient: AsyncHttpClient = new AsyncHttpClient()
   private val apiPath = s"${config.getString("leancloud.host")}/${config.getString("leancloud.version")}/classes"
 
-  def insert(className: String, body: String): Future[Response] = execute {
+  def insert(body: String)(implicit className: String): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(s"$apiPath/$className")
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     requestBuilder.setBody(body)
   }
 
-  def get(className: String, objectId: String): Future[Response] = execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
+  def get(objectId: String)(implicit className: String): Future[Response] =
+    execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
   private def execute(r: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
     val timestamp: Long = System.currentTimeMillis()

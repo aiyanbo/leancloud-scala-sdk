@@ -10,10 +10,13 @@ import org.scalatest.FunSuite
  * Date: 15/5/12
  * @author Andy Ai
  */
-class AppTest extends FunSuite {
-  test("Make request") {
-    val f: Future[Response] = get("stacks", "scala")
+class StacksSpec extends FunSuite {
+  implicit val className: String = "stacks"
+
+  test("Get stack") {
+    val f: Future[Response] = get("scala")
     val response: Response = f.get()
     println(response.getResponseBody)
+    assertResult(200)(response.getStatusCode)
   }
 }
