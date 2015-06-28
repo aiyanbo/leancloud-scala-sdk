@@ -29,6 +29,9 @@ object LeanCloudClient {
   def get(objectId: String)(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
+  def get(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+    execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
+
   private def execute(r: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
     val timestamp: Long = System.currentTimeMillis()
     r.addHeader("X-AVOSCloud-Application-Id", id)
