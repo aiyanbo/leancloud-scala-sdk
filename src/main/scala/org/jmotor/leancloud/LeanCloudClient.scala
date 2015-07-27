@@ -1,5 +1,6 @@
 package org.jmotor.leancloud
 
+import java.net.URLEncoder
 import java.util.concurrent.Future
 
 import com.ning.http.client.{AsyncHttpClient, Response}
@@ -35,6 +36,44 @@ object LeanCloudClient {
 
   def get(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
+
+  def query(where: String,
+            order: Option[String] = None,
+            keys: Option[String] = None,
+            include: Option[String] = None,
+            limit: Option[Integer] = None,
+            skip: Option[Integer] = None)(implicit className: String): Future[Response] = {
+    execute {
+      asyncHttpClient.prepareGet {
+        s"$apiPath/$className?where=${URLEncoder.encode(where, "utf-8")}${
+          order match {
+            case Some(o) => s"&order=$o"
+            case None => ""
+          }
+        }${
+          keys match {
+            case Some(k) => s"&keys=$k"
+            case None => ""
+          }
+        }${
+          include match {
+            case Some(i) => s"&include=$i"
+            case None => ""
+          }
+        }${
+          limit match {
+            case Some(l) => s"&limit=$l"
+            case None => ""
+          }
+        }${
+          skip match {
+            case Some(s) => s"&skip=$s"
+            case None => ""
+          }
+        }"
+      }
+    }
+  }
 
   private def execute(r: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
     val timestamp: Long = System.currentTimeMillis()
