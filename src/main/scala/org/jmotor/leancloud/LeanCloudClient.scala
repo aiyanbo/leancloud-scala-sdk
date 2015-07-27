@@ -26,6 +26,10 @@ object LeanCloudClient {
     requestBuilder.setBody(body)
   }
 
+  def delete(objectId: String)(implicit className: String): Future[Response] = {
+    execute(asyncHttpClient.prepareDelete(s"$apiPath/$className/$objectId"))
+  }
+
   def get(objectId: String)(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
