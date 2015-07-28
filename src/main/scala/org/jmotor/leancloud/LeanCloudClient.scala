@@ -49,16 +49,29 @@ object LeanCloudClient {
     }
   }
 
+  def exists(filters: Map[String, Any])(implicit className: String): Boolean = {
+    exists(s"{${filters.foldLeft("")((l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${kv._1}":"${kv._2.toString}"""")}}")
+  }
+
   def exists(where: String)(implicit className: String): Boolean = {
     query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
       case r if r.getStatusCode / 100 == 2 =>
-        val emptyBody = """ *\{"results":[ *]} *""".r
+        val emptyBody = """ *\{"results":\[ *\]} *""".r
         r.getResponseBody match {
           case emptyBody() => false
           case _ => true
         }
       case r => throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
     }
+  }
+
+  def filter(filters: Map[String, Any],
+             order: Option[String] = None,
+             keys: Option[String] = None,
+             include: Option[String] = None,
+             limit: Option[Integer] = None,
+             skip: Option[Integer] = None)(implicit className: String): Future[Response] = {
+    query(s"{${filters.foldLeft("")((l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${kv._1}":"${kv._2.toString}"""")}}", order, keys, include, limit, skip)
   }
 
   def query(where: String,
