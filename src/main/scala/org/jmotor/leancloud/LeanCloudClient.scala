@@ -37,6 +37,30 @@ object LeanCloudClient {
   def get(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
+  def existsObjectId(objectId: String)(implicit className: String): Boolean = {
+    get(objectId).get() match {
+      case r if r.getStatusCode / 100 == 2 =>
+        val emptyBody = """ *\{ *\} *""".r
+        r.getResponseBody match {
+          case emptyBody() => false
+          case _ => true
+        }
+      case r => throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
+    }
+  }
+
+  def exists(where: String)(implicit className: String): Boolean = {
+    query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
+      case r if r.getStatusCode / 100 == 2 =>
+        val emptyBody = """ *\{"results":[ *]} *""".r
+        r.getResponseBody match {
+          case emptyBody() => false
+          case _ => true
+        }
+      case r => throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
+    }
+  }
+
   def query(where: String,
             order: Option[String] = None,
             keys: Option[String] = None,
