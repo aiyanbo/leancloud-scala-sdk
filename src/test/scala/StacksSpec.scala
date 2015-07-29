@@ -1,7 +1,3 @@
-import java.util.concurrent.Future
-
-import com.ning.http.client.Response
-import org.jmotor.leancloud.LeanCloudClient._
 import org.scalatest.FunSuite
 
 /**
@@ -11,12 +7,13 @@ import org.scalatest.FunSuite
  * @author Andy Ai
  */
 class StacksSpec extends FunSuite {
-  implicit val className: String = "stacks"
 
-  test("Get stack") {
-    val f: Future[Response] = get("scala")
-    val response: Response = f.get()
-    println(response.getResponseBody)
-    assertResult(200)(response.getStatusCode)
+  test("Match results") {
+    val str = s"""{"results": ["123456","dfjkdfjkdfj"]}"""
+    val r = """\{"results": *\[(.*)\]\}""".r
+    str match {
+      case r(ids) => println(ids)
+      case _ => println("non")
+    }
   }
 }
