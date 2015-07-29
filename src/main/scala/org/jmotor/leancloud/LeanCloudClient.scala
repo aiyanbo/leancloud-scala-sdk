@@ -50,7 +50,7 @@ object LeanCloudClient {
   }
 
   def exists(filters: Map[String, Any])(implicit className: String): Boolean = {
-    exists(s"{${filters.foldLeft("")((l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${kv._1}":"${kv._2.toString}"""")}}")
+    exists(toJsonString(filters))
   }
 
   def exists(where: String)(implicit className: String): Boolean = {
@@ -71,7 +71,7 @@ object LeanCloudClient {
              include: Option[String] = None,
              limit: Option[Integer] = None,
              skip: Option[Integer] = None)(implicit className: String): Future[Response] = {
-    query(s"{${filters.foldLeft("")((l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${kv._1}":"${kv._2.toString}"""")}}", order, keys, include, limit, skip)
+    query(toJsonString(filters), order, keys, include, limit, skip)
   }
 
   def query(where: String,
@@ -118,4 +118,8 @@ object LeanCloudClient {
     r.addHeader("X-AVOSCloud-Request-Sign", s"${MD5Utilities.encode(s"$timestamp$key")},$timestamp")
     r.addHeader(HttpHeaders.Names.USER_AGENT, "leancloud-scala-sdk-1.0.0-SNAPSHOT")
   }.execute()
+
+  private def toJsonString(filters: Map[String, Any]): String = {
+    s"{${filters.foldLeft("")((l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${kv._1}":${if (kv._2.isInstanceOf[Number] || kv._2.isInstanceOf[Boolean]) kv._2.toString else s""""${kv._2.toString}""""}""")}}"
+  }
 }
