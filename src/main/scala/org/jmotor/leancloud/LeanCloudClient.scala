@@ -6,6 +6,7 @@ import java.util.concurrent.Future
 import com.ning.http.client.{AsyncHttpClient, Response}
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
+import org.jmotor.conversions.JsonConversions._
 import org.jmotor.leancloud.utils.MD5Utilities
 
 /**
@@ -37,7 +38,7 @@ object LeanCloudClient {
   def update(objectId: String, updates: Map[String, Any])(implicit className: String): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePut(s"$apiPath/$className/$objectId")
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
-    requestBuilder.setBody(toJsonString(updates))
+    requestBuilder.setBody(updates)
   }
 
   def update(filters: Map[String, Any], updates: Map[String, Any])(implicit className: String): Future[Response] = {
@@ -50,7 +51,7 @@ object LeanCloudClient {
           response
         } else {
           batch {
-            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", toJsonString(updates)))
+            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", updates))
           }
         }
       case _ => response
@@ -73,7 +74,7 @@ object LeanCloudClient {
     case r => throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
   }
 
-  def exists(filters: Map[String, Any])(implicit className: String): Boolean = exists(toJsonString(filters))
+  def exists(filters: Map[String, Any])(implicit className: String): Boolean = exists(filters)
 
   def exists(where: String)(implicit className: String): Boolean = {
     query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
@@ -92,7 +93,7 @@ object LeanCloudClient {
              keys: Option[String] = None,
              include: Option[String] = None,
              limit: Option[Integer] = None,
-             skip: Option[Integer] = None)(implicit className: String): Future[Response] = query(toJsonString(filters), order, keys, include, limit, skip)
+             skip: Option[Integer] = None)(implicit className: String): Future[Response] = query(filters, order, keys, include, limit, skip)
 
   def query(where: String,
             order: Option[String] = None,
@@ -154,16 +155,4 @@ object LeanCloudClient {
     r.addHeader(HttpHeaders.Names.USER_AGENT, "leancloud-scala-sdk-1.0.0-SNAPSHOT")
   }.execute()
 
-  private def toJsonString(filters: Map[String, Any]): String =
-    s"{${
-      filters.foldLeft("")(
-        (l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${
-          kv._1
-        }":${
-          if (kv._2.isInstanceOf[Number] || kv._2.isInstanceOf[Boolean])
-            kv._2.toString
-          else s""""${kv._2.toString}""""
-        }"""
-      )
-    }}"
 }

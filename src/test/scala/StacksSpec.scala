@@ -1,5 +1,7 @@
 import org.scalatest.FunSuite
 
+import org.jmotor.conversions.JsonConversions._
+
 /**
  * Component:
  * Description:
@@ -15,4 +17,10 @@ class StacksSpec extends FunSuite {
     println(s"ids is empty: ${ids.isEmpty}")
     ids.foreach(id => println(id))
   }
+
+  test("To json string") {
+    val map = Map("username" -> "aiyanbo", "objectId" -> "55667", "age" -> 15, "hobbies" -> List("java", "scala", "clojure"), "others" -> Map("gate" -> 3))
+    println(mapToJsonString(map))
+  }
+
 }
