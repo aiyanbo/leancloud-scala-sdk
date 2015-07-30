@@ -40,24 +40,20 @@ object LeanCloudClient {
     requestBuilder.setBody(toJsonString(updates))
   }
 
-  def update(filters: Map[String, Any], updates: Map[String, Any])(implicit className: String): String = {
-    val response = filter(filters, keys = Some("objectId")).get()
-    response match {
+  def update(filters: Map[String, Any], updates: Map[String, Any])(implicit className: String): Future[Response] = {
+    val response = filter(filters, keys = Some("objectId"))
+    response.get() match {
       case r if r.getStatusCode == 200 =>
-        val resultRegex = """\{"results": *\[(.*)\]\}""".r
-        val emptyBody = """\{"results": *\[ *\]\}""".r
-        r.getResponseBody match {
-          case emptyBody() => "[]"
-          case resultRegex(objectIds) =>
-            batch {
-              val objectIdRegex = """\{.*"objectId" *: *"(\w+)".*""".r
-              objectIds.split( """\}""").map {
-                case objectIdRegex(objectId) => Request(s"/$version/classes/$className/$objectId", "PUT", toJsonString(updates))
-              }.toList
-            }.get().getResponseBody
-          case _ => "[]"
+        val objectIds = """"objectId": *"(\w+)"""".r
+        val ids = for (id <- objectIds findAllMatchIn r.getResponseBody) yield id group 1
+        if (ids.isEmpty) {
+          response
+        } else {
+          batch {
+            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", toJsonString(updates))).toList
+          }
         }
-      case _ => "[]"
+      case _ => response
     }
   }
 
@@ -69,7 +65,7 @@ object LeanCloudClient {
 
   def existsObjectId(objectId: String)(implicit className: String): Boolean = get(objectId).get() match {
     case r if r.getStatusCode / 100 == 2 =>
-      val emptyBody = """ *\{ *\} *""".r
+      val emptyBody = """^\{ *\}$""".r
       r.getResponseBody match {
         case emptyBody() => false
         case _ => true
@@ -77,13 +73,12 @@ object LeanCloudClient {
     case r => throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
   }
 
-
   def exists(filters: Map[String, Any])(implicit className: String): Boolean = exists(toJsonString(filters))
 
   def exists(where: String)(implicit className: String): Boolean = {
     query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
       case r if r.getStatusCode / 100 == 2 =>
-        val emptyBody = """ *\{"results":\[ *\]} *""".r
+        val emptyBody = """^\{"results":\[ *\]}$""".r
         r.getResponseBody match {
           case emptyBody() => false
           case _ => true
