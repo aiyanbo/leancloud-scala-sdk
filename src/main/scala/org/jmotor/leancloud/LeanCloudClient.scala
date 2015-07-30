@@ -50,7 +50,7 @@ object LeanCloudClient {
           response
         } else {
           batch {
-            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", toJsonString(updates))).toList
+            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", toJsonString(updates)))
           }
         }
       case _ => response
@@ -132,7 +132,7 @@ object LeanCloudClient {
     }
   }
 
-  def batch(requests: List[Request]): Future[Response] = execute {
+  def batch(requests: Iterator[Request]): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     val contents: String = requests
