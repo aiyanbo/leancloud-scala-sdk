@@ -138,8 +138,7 @@ object LeanCloudClient {
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     val contents: String = requests
       .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
-      .foldLeft("")(
-        (l, r) ⇒ l + (if (l.isEmpty) "" else ",") + r)
+      .foldLeft("")((l, r) ⇒ l + (if (l.isEmpty) "" else ",") + r)
     requestBuilder.setBody(s"""{"requests": [$contents]}""")
   }
 
