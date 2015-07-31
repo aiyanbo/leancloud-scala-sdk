@@ -1,5 +1,8 @@
 package org.jmotor.conversions
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 import scala.language.implicitConversions
 
 /**
@@ -18,6 +21,7 @@ object JsonConversions {
         case n: Number  ⇒ n.toString
         case b: Boolean ⇒ b.toString
         case e: String  ⇒ s""""$e""""
+        case d: Date    ⇒ s""""${new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(d)}""""
       }
       filters.foldLeft("")(
         (l, kv) ⇒ l + (if (l.isEmpty) "" else separator) + s""""${
