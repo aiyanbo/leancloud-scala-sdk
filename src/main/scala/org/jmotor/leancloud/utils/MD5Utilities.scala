@@ -16,12 +16,12 @@ object MD5Utilities {
       messageDigest.update(plainText.getBytes("UTF-8"))
       val bytes = messageDigest.digest()
       val result: StringBuilder = new StringBuilder(bytes.length * 12)
-      for (b <- bytes) {
+      for (b ← bytes) {
         result.append(Integer.toHexString((0x000000ff & b) | 0xffffff00).substring(6))
       }
       result.toString();
     } catch {
-      case e: Throwable => throw new RuntimeException("MD5 encode failure.")
+      case e: Throwable ⇒ throw new RuntimeException("MD5 encode failure.")
     }
   }
 }

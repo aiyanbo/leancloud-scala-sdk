@@ -11,3 +11,5 @@ libraryDependencies ++= Seq(
   "com.ning" % "async-http-client" % "1.9.22",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
+
+Formatting.formatSettings

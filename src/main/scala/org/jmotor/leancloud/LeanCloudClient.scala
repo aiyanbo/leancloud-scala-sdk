@@ -3,7 +3,7 @@ package org.jmotor.leancloud
 import java.net.URLEncoder
 import java.util.concurrent.Future
 
-import com.ning.http.client.{AsyncHttpClient, Response}
+import com.ning.http.client.{ AsyncHttpClient, Response }
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jmotor.conversions.JsonConversions._
@@ -44,17 +44,17 @@ object LeanCloudClient {
   def update(filters: Map[String, Any], updates: Map[String, Any])(implicit className: String): Future[Response] = {
     val response = filter(filters, keys = Some("objectId"))
     response.get() match {
-      case r if r.getStatusCode == 200 =>
+      case r if r.getStatusCode == 200 ⇒
         val objectIds = """"objectId": *"(\w+)"""".r
-        val ids = for (id <- objectIds findAllMatchIn r.getResponseBody) yield id group 1
+        val ids = for (id ← objectIds findAllMatchIn r.getResponseBody) yield id group 1
         if (ids.isEmpty) {
           response
         } else {
           batch {
-            ids.map(id => Request(s"/$version/classes/$className/$id", "PUT", updates))
+            ids.map(id ⇒ Request(s"/$version/classes/$className/$id", "PUT", updates))
           }
         }
-      case _ => response
+      case _ ⇒ response
     }
   }
 
@@ -65,26 +65,26 @@ object LeanCloudClient {
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
   def existsObjectId(objectId: String)(implicit className: String): Boolean = get(objectId).get() match {
-    case r if r.getStatusCode / 100 == 2 =>
+    case r if r.getStatusCode / 100 == 2 ⇒
       val emptyBody = """^\{ *\}$""".r
       r.getResponseBody match {
-        case emptyBody() => false
-        case _ => true
+        case emptyBody() ⇒ false
+        case _           ⇒ true
       }
-    case r => throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
+    case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
   }
 
   def exists(filters: Map[String, Any])(implicit className: String): Boolean = exists(filters)
 
   def exists(where: String)(implicit className: String): Boolean = {
     query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
-      case r if r.getStatusCode / 100 == 2 =>
+      case r if r.getStatusCode / 100 == 2 ⇒
         val emptyBody = """^\{"results":\[ *\]}$""".r
         r.getResponseBody match {
-          case emptyBody() => false
-          case _ => true
+          case emptyBody() ⇒ false
+          case _           ⇒ true
         }
-      case r => throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
+      case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
     }
   }
 
@@ -106,28 +106,28 @@ object LeanCloudClient {
         URLEncoder.encode(where, "utf-8")
       }${
         order match {
-          case Some(o) => s"&order=$o"
-          case None => ""
+          case Some(o) ⇒ s"&order=$o"
+          case None    ⇒ ""
         }
       }${
         keys match {
-          case Some(k) => s"&keys=$k"
-          case None => ""
+          case Some(k) ⇒ s"&keys=$k"
+          case None    ⇒ ""
         }
       }${
         include match {
-          case Some(i) => s"&include=$i"
-          case None => ""
+          case Some(i) ⇒ s"&include=$i"
+          case None    ⇒ ""
         }
       }${
         limit match {
-          case Some(l) => s"&limit=$l"
-          case None => ""
+          case Some(l) ⇒ s"&limit=$l"
+          case None    ⇒ ""
         }
       }${
         skip match {
-          case Some(s) => s"&skip=$s"
-          case None => ""
+          case Some(s) ⇒ s"&skip=$s"
+          case None    ⇒ ""
         }
       }"
     }
@@ -137,11 +137,10 @@ object LeanCloudClient {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     val contents: String = requests
-      .map(r => s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
+      .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
       .foldLeft("")(
-        (l, r) => l + (if (l.isEmpty) "" else ",") + r
-      )
-    requestBuilder.setBody( s"""{"requests": [$contents]}""")
+        (l, r) ⇒ l + (if (l.isEmpty) "" else ",") + r)
+    requestBuilder.setBody(s"""{"requests": [$contents]}""")
   }
 
   case class Request(path: String, method: String, body: String)
