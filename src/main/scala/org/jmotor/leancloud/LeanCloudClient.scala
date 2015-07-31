@@ -79,7 +79,7 @@ object LeanCloudClient {
   def exists(where: String)(implicit className: String): Boolean = {
     query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
       case r if r.getStatusCode / 100 == 2 ⇒
-        val emptyBody = """^\{"results":\[ *\]}$""".r
+        val emptyBody = """^\{"results": *\[ *\]}$""".r
         r.getResponseBody match {
           case emptyBody() ⇒ false
           case _           ⇒ true
@@ -138,7 +138,7 @@ object LeanCloudClient {
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     val contents: String = requests
       .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
-      .foldLeft("")((l, r) ⇒ l + (if (l.isEmpty) "" else ",") + r)
+      .reduce(_ + ", " + _)
     requestBuilder.setBody(s"""{"requests": [$contents]}""")
   }
 

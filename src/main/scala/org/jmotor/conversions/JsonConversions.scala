@@ -10,6 +10,8 @@ import scala.language.implicitConversions
  * @author Andy.Ai
  */
 object JsonConversions {
+  private val separator = ", "
+
   implicit def mapToJsonString(filters: Map[String, Any]): String =
     s"{${
       val toJsonNodeString: PartialFunction[Any, String] = {
@@ -18,13 +20,13 @@ object JsonConversions {
         case e: String  ⇒ s""""$e""""
       }
       filters.foldLeft("")(
-        (l, kv) ⇒ l + (if (l.isEmpty) "" else ",") + s""""${
+        (l, kv) ⇒ l + (if (l.isEmpty) "" else separator) + s""""${
           kv._1
-        }":${
+        }": ${
           toJsonNodeString.applyOrElse(kv._2, PartialFunction[Any, String] {
             case m: Map[String, _] ⇒ mapToJsonString(m)
-            case i: Iterable[_]    ⇒ s"[${i.map(toJsonNodeString).reduce(_ + "," + _)}]"
-            case a: Array[_]       ⇒ s"[${a.map(toJsonNodeString).reduce(_ + "," + _)}]"
+            case i: Iterable[_]    ⇒ s"[${i.map(toJsonNodeString).reduce(_ + separator + _)}]"
+            case a: Array[_]       ⇒ s"[${a.map(toJsonNodeString).reduce(_ + separator + _)}]"
             case others            ⇒ s""""${others.toString}""""
           })
         }""")
