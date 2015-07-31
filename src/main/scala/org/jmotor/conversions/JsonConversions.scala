@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 object JsonConversions {
   implicit def mapToJsonString(filters: Map[String, Any]): String =
     s"{${
-      def toJsonNodeString(v: Any) = v match {
+      val toJsonNodeString: PartialFunction[Any, String] = {
         case n: Number => n.toString
         case b: Boolean => b.toString
         case e: String => s""""$e""""
@@ -21,14 +21,12 @@ object JsonConversions {
         (l, kv) => l + (if (l.isEmpty) "" else ",") + s""""${
           kv._1
         }":${
-          kv._2 match {
-            case n: Number => n.toString
-            case b: Boolean => b.toString
+          toJsonNodeString.applyOrElse(kv._2, PartialFunction[Any, String] {
             case m: Map[String, _] => mapToJsonString(m)
             case i: Iterable[_] => s"[${i.map(toJsonNodeString).reduce(_ + "," + _)}]"
             case a: Array[_] => s"[${a.map(toJsonNodeString).reduce(_ + "," + _)}]"
             case others => s""""${others.toString}""""
-          }
+          })
         }"""
       )
     }}"
