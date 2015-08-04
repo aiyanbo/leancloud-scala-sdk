@@ -1,7 +1,7 @@
 package org.jmotor.conversions
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneId}
+import java.time.{ LocalDateTime, ZoneId }
 import java.util.Date
 
 import scala.language.implicitConversions
