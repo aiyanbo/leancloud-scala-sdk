@@ -64,6 +64,9 @@ object LeanCloudClient {
   def get(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
+  def get(order: String, limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+    execute(asyncHttpClient.prepareGet(s"$apiPath/$className?order=$order&limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
+
   def existsObjectId(objectId: String)(implicit className: String): Boolean = get(objectId).get() match {
     case r if r.getStatusCode / 100 == 2 ⇒
       val emptyBody = """^\{ *\}$""".r
