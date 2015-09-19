@@ -3,7 +3,7 @@ package org.jmotor.leancloud
 import java.net.URLEncoder
 import java.util.concurrent.Future
 
-import com.ning.http.client.{AsyncHttpClient, Response}
+import com.ning.http.client.{ AsyncHttpClient, Response }
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jmotor.conversions.JsonConversions
@@ -75,7 +75,7 @@ object LeanCloudClient {
       val emptyBody = """^\{ *\}$""".r
       r.getResponseBody match {
         case emptyBody() ⇒ false
-        case _ ⇒ true
+        case _           ⇒ true
       }
     case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
   }
@@ -88,7 +88,7 @@ object LeanCloudClient {
         val emptyBody = """^\{"results": *\[ *\]}$""".r
         r.getResponseBody match {
           case emptyBody() ⇒ false
-          case _ ⇒ true
+          case _           ⇒ true
         }
       case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
     }
@@ -113,27 +113,27 @@ object LeanCloudClient {
       }${
         order match {
           case Some(o) ⇒ s"&order=$o"
-          case None ⇒ ""
+          case None    ⇒ ""
         }
       }${
         keys match {
           case Some(k) ⇒ s"&keys=$k"
-          case None ⇒ ""
+          case None    ⇒ ""
         }
       }${
         include match {
           case Some(i) ⇒ s"&include=$i"
-          case None ⇒ ""
+          case None    ⇒ ""
         }
       }${
         limit match {
           case Some(l) ⇒ s"&limit=$l"
-          case None ⇒ ""
+          case None    ⇒ ""
         }
       }${
         skip match {
           case Some(s) ⇒ s"&skip=$s"
-          case None ⇒ ""
+          case None    ⇒ ""
         }
       }"
     }
@@ -145,7 +145,7 @@ object LeanCloudClient {
     val contents: String = requests
       .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
       .reduce(_ + ", " + _)
-    requestBuilder.setBody( s"""{"requests": [$contents]}""")
+    requestBuilder.setBody(s"""{"requests": [$contents]}""")
   }
 
   case class Request(path: String, method: String, body: String)
