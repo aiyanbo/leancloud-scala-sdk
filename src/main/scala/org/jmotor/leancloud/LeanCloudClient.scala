@@ -3,7 +3,7 @@ package org.jmotor.leancloud
 import java.net.URLEncoder
 import java.util.concurrent.Future
 
-import com.ning.http.client.{AsyncHttpClient, Response}
+import com.ning.http.client.{ AsyncHttpClient, Response }
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jmotor.conversions.JsonConversions
