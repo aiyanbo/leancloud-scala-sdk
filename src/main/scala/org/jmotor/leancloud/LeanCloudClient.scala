@@ -3,7 +3,7 @@ package org.jmotor.leancloud
 import java.net.URLEncoder
 import java.util.concurrent.Future
 
-import com.ning.http.client.{ AsyncHttpClient, Response }
+import com.ning.http.client.{AsyncHttpClient, Response}
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jmotor.conversions.JsonConversions
@@ -64,10 +64,10 @@ object LeanCloudClient {
   def get(objectId: String)(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
-  def get(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+  def select(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
-  def get(order: String, limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+  def select(order: String, limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?order=$order&limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
   def existsObjectId(objectId: String)(implicit className: String): Boolean = get(objectId).get() match {
