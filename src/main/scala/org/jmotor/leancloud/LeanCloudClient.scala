@@ -80,17 +80,15 @@ object LeanCloudClient {
     case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, objectId: $objectId")
   }
 
-  def exists(filters: Map[String, Any])(implicit className: String): Boolean = exists(filters)
-
-  def exists(where: String)(implicit className: String): Boolean = {
-    query(where = where, keys = Some("objectId"), limit = Some(1)).get() match {
+  def exists(filters: Map[String, Any])(implicit className: String): Boolean = {
+    query(where = filters, keys = Some("objectId"), limit = Some(1)).get() match {
       case r if r.getStatusCode / 100 == 2 ⇒
         val emptyBody = """^\{"results": *\[ *\]}$""".r
         r.getResponseBody match {
           case emptyBody() ⇒ false
           case _           ⇒ true
         }
-      case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, where: $where")
+      case r ⇒ throw new IllegalAccessException(s"check exists exception className: $className, where: $filters")
     }
   }
 
