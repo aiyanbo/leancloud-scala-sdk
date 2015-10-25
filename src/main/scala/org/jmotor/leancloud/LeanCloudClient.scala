@@ -64,10 +64,10 @@ object LeanCloudClient {
   def get(objectId: String)(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className/$objectId"))
 
-  def select(limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+  def select(limit: Option[Int], skip: Option[Int])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
-  def select(order: String, limit: Option[Integer], skip: Option[Integer])(implicit className: String): Future[Response] =
+  def select(order: String, limit: Option[Int], skip: Option[Int])(implicit className: String): Future[Response] =
     execute(asyncHttpClient.prepareGet(s"$apiPath/$className?order=$order&limit=${limit.getOrElse(100)}&skip=${skip.getOrElse(0)}"))
 
   def existsObjectId(objectId: String)(implicit className: String): Boolean = get(objectId).get() match {
@@ -93,7 +93,7 @@ object LeanCloudClient {
   }
 
   def count(filters: Map[String, Any], limit: Option[Int])(implicit className: String): Int = {
-    query(where = filters, keys = Some("objectId"), limit = Some(1)).get() match {
+    query(where = filters, keys = Some("objectId"), limit = limit).get() match {
       case r if r.getStatusCode / 100 == 2 ⇒
         val emptyBody = """^\{"results": *\[ *\]}$""".r
         r.getResponseBody match {
@@ -108,15 +108,15 @@ object LeanCloudClient {
              order: Option[String] = None,
              keys: Option[String] = None,
              include: Option[String] = None,
-             limit: Option[Integer] = None,
-             skip: Option[Integer] = None)(implicit className: String): Future[Response] = query(filters, order, keys, include, limit, skip)
+             limit: Option[Int] = None,
+             skip: Option[Int] = None)(implicit className: String): Future[Response] = query(filters, order, keys, include, limit, skip)
 
   def query(where: String,
             order: Option[String] = None,
             keys: Option[String] = None,
             include: Option[String] = None,
-            limit: Option[Integer] = None,
-            skip: Option[Integer] = None)(implicit className: String): Future[Response] = execute {
+            limit: Option[Int] = None,
+            skip: Option[Int] = None)(implicit className: String): Future[Response] = execute {
     asyncHttpClient.prepareGet {
       s"$apiPath/$className?where=${
         URLEncoder.encode(where, "utf-8")
