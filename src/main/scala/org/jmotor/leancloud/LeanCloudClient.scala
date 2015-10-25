@@ -92,6 +92,18 @@ object LeanCloudClient {
     }
   }
 
+  def size(filters: Map[String, Any], limit: Option[Int])(implicit className: String): Int = {
+    query(where = filters, keys = Some("objectId"), limit = Some(1)).get() match {
+      case r if r.getStatusCode / 100 == 2 ⇒
+        val emptyBody = """^\{"results": *\[ *\]}$""".r
+        r.getResponseBody match {
+          case emptyBody() ⇒ 0
+          case body        ⇒ """"objectId"""".r.findAllMatchIn(body).size
+        }
+      case r ⇒ throw new IllegalAccessException(s"check size exception className: $className, where: $filters")
+    }
+  }
+
   def filter(filters: Map[String, Any],
              order: Option[String] = None,
              keys: Option[String] = None,
