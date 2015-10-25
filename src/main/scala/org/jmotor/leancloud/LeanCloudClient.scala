@@ -98,7 +98,7 @@ object LeanCloudClient {
         val emptyBody = """^\{"results": *\[ *\]}$""".r
         r.getResponseBody match {
           case emptyBody() ⇒ 0
-          case body        ⇒ """"objectId"""".r.findAllMatchIn(body).size
+          case body        ⇒ """("objectId")""".r.findAllMatchIn(body).size
         }
       case r ⇒ throw new IllegalAccessException(s"check size exception className: $className, where: $filters")
     }
