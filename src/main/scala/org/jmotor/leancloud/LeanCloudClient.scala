@@ -92,7 +92,7 @@ object LeanCloudClient {
     }
   }
 
-  def size(filters: Map[String, Any], limit: Option[Int])(implicit className: String): Int = {
+  def count(filters: Map[String, Any], limit: Option[Int])(implicit className: String): Int = {
     query(where = filters, keys = Some("objectId"), limit = Some(1)).get() match {
       case r if r.getStatusCode / 100 == 2 ⇒
         val emptyBody = """^\{"results": *\[ *\]}$""".r
