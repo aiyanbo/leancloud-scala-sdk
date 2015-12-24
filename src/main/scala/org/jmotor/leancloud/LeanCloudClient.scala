@@ -11,6 +11,7 @@ import org.jmotor.leancloud.utils.MD5Utilities
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Future, Promise }
+
 /**
  * Component:
  * Description:
@@ -37,6 +38,10 @@ object LeanCloudClient {
 
   def insert(properties: Map[String, Any])(implicit className: String): Future[Response] = insert(JsonConversions.mapToJsonString(properties))
 
+  def batchInsert(entities: List[Map[String, Any]])(implicit className: String): Future[Response] = batch {
+    entities.map(Request(s"/$version/classes/$className", "POST", _))
+  }
+
   def delete(objectId: String)(implicit className: String): Future[Response] = execute {
     asyncHttpClient.prepareDelete(s"$apiPath/$className/$objectId")
   }
@@ -56,7 +61,7 @@ object LeanCloudClient {
           Future.successful(response)
         } else {
           batch {
-            ids.map(id ⇒ Request(s"/$version/classes/$className/$id", "PUT", updates))
+            ids.toTraversable.map(id ⇒ Request(s"/$version/classes/$className/$id", "PUT", updates))
           }
         }
       case response ⇒ Future.successful(response)
@@ -146,7 +151,7 @@ object LeanCloudClient {
     }
   }
 
-  def batch(requests: Iterator[Request]): Future[Response] = execute {
+  def batch(requests: Traversable[Request]): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
     requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
     val contents: String = requests
