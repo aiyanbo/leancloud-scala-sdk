@@ -151,13 +151,18 @@ object LeanCloudClient {
     }
   }
 
-  def batch(requests: Traversable[Request]): Future[Response] = execute {
-    val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
-    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
-    val contents: String = requests
-      .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
-      .reduce(_ + ", " + _)
-    requestBuilder.setBody(s"""{"requests": [$contents]}""")
+  def batch(requests: Traversable[Request]): Future[Response] = {
+    if (requests.isEmpty) {
+      throw new NullPointerException("Requests is empty")
+    }
+    execute {
+      val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
+      requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
+      val contents: String = requests
+        .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
+        .reduce(_ + ", " + _)
+      requestBuilder.setBody(s"""{"requests": [$contents]}""")
+    }
   }
 
   case class Request(path: String, method: String, body: String)
