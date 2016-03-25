@@ -10,6 +10,11 @@ libraryDependencies += "org.jmotor.leancloud" %% "leancloud-scala-sdk" % "1.0.0-
 
 ```
 
+## Dependencies
+
+Typesafe-Config: [![Current Version](http://stack-badges.herokuapp.com/maven-central/com.typesafe/config/current.svg)](http://stack-badges.herokuapp.com/maven-central/com.typesafe/config)
+AsyncHttpClient: [![Current Version](http://stack-badges.herokuapp.com/maven-central/com.ning/async-http-client/current.svg)](http://stack-badges.herokuapp.com/maven-central/com.ning/async-http-client)
+
 ## Getting Started
 
 ```scala

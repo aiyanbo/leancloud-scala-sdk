@@ -1,10 +1,12 @@
 package org.jmotor.leancloud
 
 import java.net.URLEncoder
+import java.nio.charset.Charset
 
-import com.ning.http.client.{ AsyncCompletionHandler, AsyncHttpClient, Response }
+import com.ning.http.client.{ AsyncCompletionHandler, AsyncHttpClient, AsyncHttpClientConfig, Response }
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
+import org.jmotor.ClientConfig
 import org.jmotor.conversions.JsonConversions
 import org.jmotor.conversions.JsonConversions._
 import org.jmotor.leancloud.utils.MD5Utilities
@@ -16,30 +18,38 @@ import scala.concurrent.{ Future, Promise }
  * Component:
  * Description:
  * Date: 15/5/12
+ *
  * @author Andy Ai
  */
 object LeanCloudClient {
-  private val config = ConfigFactory.load()
-  private val id = config.getString("leancloud.app-id")
-  private val key = config.getString("leancloud.app-key")
-  private val asyncHttpClient: AsyncHttpClient = new AsyncHttpClient()
-  private val version: String = config.getString("leancloud.version")
-  private val rootPath: String = s"${config.getString("leancloud.host")}/$version"
+  private val config = ClientConfig()
+  private val rootPath: String = s"${config.host}/${config.version}"
   private val apiPath: String = s"$rootPath/classes"
   private val batchPath: String = s"$rootPath/batch"
   val DEFAULT_SKIP = 0
   val DEFAULT_LIMIT = 100
 
+  private val asyncHttpClient: AsyncHttpClient = new AsyncHttpClient(
+    new AsyncHttpClientConfig.Builder().setConnectTimeout(config.connectionTimeout).build())
+
+  private[this] object MediaTypes {
+    val json = s"application/json; charset=${Charsets.UTF_8}"
+  }
+
+  private[this] object Charsets {
+    val UTF_8 = "utf-8"
+  }
+
   def insert(body: String)(implicit className: String): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(s"$apiPath/$className")
-    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
-    requestBuilder.setBody(body)
+    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, MediaTypes.json)
+    requestBuilder.setBody(body.getBytes(Charsets.UTF_8))
   }
 
   def insert(properties: Map[String, Any])(implicit className: String): Future[Response] = insert(JsonConversions.mapToJsonString(properties))
 
   def batchInsert(entities: List[Map[String, Any]])(implicit className: String): Future[Response] = batch {
-    entities.map(Request(s"/$version/classes/$className", "POST", _))
+    entities.map(Request(s"/${config.version}/classes/$className", "POST", _))
   }
 
   def delete(objectId: String)(implicit className: String): Future[Response] = execute {
@@ -48,8 +58,8 @@ object LeanCloudClient {
 
   def update(objectId: String, updates: Map[String, Any])(implicit className: String): Future[Response] = execute {
     val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePut(s"$apiPath/$className/$objectId")
-    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
-    requestBuilder.setBody(updates)
+    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, MediaTypes.json)
+    requestBuilder.setBody(updates.getBytes(Charsets.UTF_8))
   }
 
   def update(filters: Map[String, Any], updates: Map[String, Any])(implicit className: String): Future[Response] = {
@@ -61,7 +71,7 @@ object LeanCloudClient {
           Future.successful(response)
         } else {
           batch {
-            ids.toTraversable.map(id ⇒ Request(s"/$version/classes/$className/$id", "PUT", updates))
+            ids.toTraversable.map(id ⇒ Request(s"/${config.version}/classes/$className/$id", "PUT", updates))
           }
         }
       case response ⇒ Future.successful(response)
@@ -157,11 +167,11 @@ object LeanCloudClient {
     }
     execute {
       val requestBuilder: AsyncHttpClient#BoundRequestBuilder = asyncHttpClient.preparePost(batchPath)
-      requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
+      requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, MediaTypes.json)
       val contents: String = requests
         .map(r ⇒ s"""{"method": "${r.method}", "path": "${r.path}", "body": ${r.body}}""")
         .reduce(_ + ", " + _)
-      requestBuilder.setBody(s"""{"requests": [$contents]}""")
+      requestBuilder.setBody(s"""{"requests": [$contents]}""".getBytes(Charsets.UTF_8))
     }
   }
 
@@ -170,11 +180,12 @@ object LeanCloudClient {
   private def execute(r: AsyncHttpClient#BoundRequestBuilder): Future[Response] = {
     val result = Promise[Response]
     val timestamp: Long = System.currentTimeMillis()
-    r.addHeader("X-AVOSCloud-Application-Id", id)
+    r.addHeader("X-AVOSCloud-Application-Id", config.id)
     r.addHeader("X-AVOSCloud-Request-Sign", s"${
-      MD5Utilities.encode(s"$timestamp$key")
+      MD5Utilities.encode(s"$timestamp${config.key}")
     },$timestamp")
     r.addHeader(HttpHeaders.Names.USER_AGENT, "leancloud-scala-sdk-1.0.0-SNAPSHOT")
+    r.setRequestTimeout(config.requestTimeout)
     r.execute(new AsyncCompletionHandler[Response]() {
       override def onCompleted(response: Response): Response = {
         result.success(response)
