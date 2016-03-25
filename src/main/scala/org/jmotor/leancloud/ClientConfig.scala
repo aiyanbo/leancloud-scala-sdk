@@ -1,4 +1,4 @@
-package org.jmotor
+package org.jmotor.leancloud
 
 import com.typesafe.config.ConfigFactory
 

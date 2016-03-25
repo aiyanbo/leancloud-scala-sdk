@@ -3,16 +3,15 @@ package org.jmotor.leancloud
 import java.net.URLEncoder
 import java.nio.charset.Charset
 
-import com.ning.http.client.{ AsyncCompletionHandler, AsyncHttpClient, AsyncHttpClientConfig, Response }
+import com.ning.http.client.{AsyncCompletionHandler, AsyncHttpClient, AsyncHttpClientConfig, Response}
 import com.typesafe.config.ConfigFactory
 import org.jboss.netty.handler.codec.http.HttpHeaders
-import org.jmotor.ClientConfig
 import org.jmotor.conversions.JsonConversions
 import org.jmotor.conversions.JsonConversions._
 import org.jmotor.leancloud.utils.MD5Utilities
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{Future, Promise}
 
 /**
  * Component:
